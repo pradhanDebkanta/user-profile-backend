@@ -1,0 +1,27 @@
+{
+  "name": "userProfile",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "debkanta",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0",
+    "yarn": ">=1.22.0",
+    "npm": "use yarn instead of npm"
+  },
+  "scripts": {
+    "start": "export NODE_ENV=production|| set NODE_ENV=production&& node index.js",
+    "build": "export NODE_ENV=production|| set NODE_ENV=production&& node index.js",
+    "dev": "export NODE_ENV=development|| set NODE_ENV=development&& nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.7.3"
+  }
+}
