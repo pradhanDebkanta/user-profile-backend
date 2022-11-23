@@ -1,6 +1,8 @@
-const { nameValidator, emailValidate, phoneNoValidator, passwordValidator } = require('../../validators/user');
-const { decryptPasword, encryptPassword } = require('../../helpers/users');
 const db = require('../../models');
+const { nameValidator, emailValidate, phoneNoValidator, passwordValidator } = require('../../validators/user');
+const { decryptPasword, encryptPassword, } = require('../../helpers/users');
+const getAuthToken = require('../../helpers/users/extractToken');
+const jwtDecode = require('../../helpers/users/jwtDecode');
 
 const isValidUserData = function (req, res, next) {
     try {
@@ -45,14 +47,76 @@ const isValidUserData = function (req, res, next) {
 };
 
 // U2FsdGVkX1+6DYAN1vb+phV8Ske8yxsSBxz9yn5a40U=
-const isValidNewUser = function async(req, res, next) {
-    const { email } = req.body;
-    console.log(email, "dfdf");
-    next();
+const isValidNewUser = async function (req, res, next) {
+    try {
+        const { email } = req.body;
+        if (email) {
+            let isExistUser = await db.Users.findOne({ email });
+            if (isExistUser) {
+                return next({
+                    status: 403,
+                    message: 'User email is already exist..'
+                })
+            } else {
+                next();
+            }
+
+        } else {
+            return next({
+                status: 400,
+                message: 'email must be required..'
+            })
+        }
+    } catch (err) {
+        return next({
+            message: err.message
+        })
+    }
 }
 
-const isAuthentication = function (req, res, next) {
+const isAuthentication = async function (req, res, next) {
+    try {
+        let token = getAuthToken(req);
+        if (token) {
+            let isTokenExist = await db.Tokens.findOne({ jwt: token });
+            if (isTokenExist) {
+                let decode = jwtDecode(token);
+                // console.log(decode, "deocded")
+                if (typeof decode === 'object') {
+                    let result = await db.Users.findById(decode.id);
+                    if (result) {
+                        next({
+                            result
+                        });
+                    } else {
+                        return next({
+                            status: 403,
+                            message: 'invalid user...'
+                        })
+                    }
+                } else {
+                    return next({
+                        status: 403,
+                        message: 'jwt token expired..'
+                    })
+                }
 
+            } else {
+                return next({
+                    status: 403,
+                    message: 'unAuthorized token'
+                })
+            }
+        } else {
+            return next({
+                message: 'auth token is required..'
+            })
+        }
+    } catch (err) {
+        return next({
+            message: err.message
+        })
+    }
 }
 
 module.exports = {
