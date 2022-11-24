@@ -19,13 +19,13 @@ const createNewUser = async (req, res, next) => {
             email,
             id: result._id,
         };
-        let token = jwt.sign(dataObj, process.env.JWT_SECRET_TOKEN, { expiresIn: '60' });
+        let token = jwt.sign(dataObj, process.env.JWT_SECRET_TOKEN, { expiresIn: '7d' });
 
         let jwtToken = new db.Tokens({
             jwt: token
         });
         let tokenRes = await jwtToken.save();
-        console.log(tokenRes, 'token res')
+        // console.log(tokenRes, 'token res')
 
         return res.json({
             name, email, phoneNo, token
@@ -37,16 +37,18 @@ const createNewUser = async (req, res, next) => {
     }
 };
 
-const updateUserProfile = async (err, req, res, next) => {
+const updateUserProfile = async (req, res, next) => {
     try {
-        const { changeItem } = req.params;
+        const { changeItem, userId } = req.params;
         const data = req.body;
         // console.log(changeItem, "change item")
-        const users = err.result;
+        const users = await db.Users.findOne({ email: userId });
         let dataObj = {
             name: users?.name,
             email: users?.email,
-            phoneNo: users?.phoneNo
+            phoneNo: users?.phoneNo,
+            profileImgUrl: users?.profileImgUrl,
+            profileImgId: users?.profileImgId,
         };
 
         if (changeItem === 'phoneNo' && data?.phoneNo && phoneNoValidator(data?.phoneNo)) {

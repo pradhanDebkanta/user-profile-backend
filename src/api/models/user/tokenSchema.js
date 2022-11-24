@@ -9,7 +9,7 @@ const tokenSchema = new Schema({
         unique: true
     }
 }, {
-    expireAfterSeconds: 5
+    expireAfterSeconds: 3600 * 24 * 7
 });
 
 module.exports = mongoose.model('Tokens', tokenSchema);

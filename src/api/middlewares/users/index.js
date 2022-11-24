@@ -76,18 +76,25 @@ const isValidNewUser = async function (req, res, next) {
 
 const isAuthentication = async function (req, res, next) {
     try {
+        const { userId } = req.params;
         let token = getAuthToken(req);
-        if (token) {
+
+        if (token && userId) {
             let isTokenExist = await db.Tokens.findOne({ jwt: token });
             if (isTokenExist) {
                 let decode = jwtDecode(token);
                 // console.log(decode, "deocded")
+                if (decode?.email !== userId) {
+                    return next({
+                        status: 403,
+                        message: 'token email does not matched with userId..'
+                    })
+                }
                 if (typeof decode === 'object') {
                     let result = await db.Users.findById(decode.id);
                     if (result) {
-                        next({
-                            result
-                        });
+                        next();
+
                     } else {
                         return next({
                             status: 403,
@@ -109,6 +116,7 @@ const isAuthentication = async function (req, res, next) {
             }
         } else {
             return next({
+                status: 403,
                 message: 'auth token is required..'
             })
         }
